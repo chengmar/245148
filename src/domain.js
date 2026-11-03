@@ -120,18 +120,26 @@ export async function trackingUpdate(tx,id,{status,message}){
 }
 // 事务内消费：运单投影与消费确认一起提交；崩溃重启后可继续处理。
 export async function dispatch(db,{fail=false,limit=30,force=false}={}){
-  return db.tx(async tx=>{
-    const events=await tx.all("SELECT * FROM outbox WHERE status IN ('PENDING','RETRY') AND available_at<=? ORDER BY seq LIMIT ?",[force?'9999-12-31T00:00:00.000Z':now(),limit]);
-    let consumed=0,failed=0;
-    for(const e of events){
-      if(fail){const attempts=e.attempts+1;await tx.run('UPDATE outbox SET attempts=?,status=?,error=?,available_at=? WHERE id=?',[attempts,attempts>=5?'DEAD':'RETRY','演示故障：模拟物流消费不可用',new Date(Date.now()+Math.min(60000,1000*2**attempts)).toISOString(),e.id]);failed++;continue;}
+  const safeLimit=Number.isInteger(limit)?Math.min(1000,Math.max(1,limit)):30;
+  const due=force?'9999-12-31T00:00:00.000Z':now();
+  const events=await db.tx(tx=>tx.all(`SELECT id FROM outbox WHERE status IN ('PENDING','RETRY') AND available_at<=? ORDER BY seq LIMIT ${safeLimit}`,[due]));
+  let consumed=0,failed=0;
+  for(const selected of events){
+    try {const changed=await db.tx(async tx=>{
+      const e=await tx.get('SELECT * FROM outbox WHERE id=?',[selected.id]);
+      if(!e||!['PENDING','RETRY'].includes(e.status)||e.available_at>due)return false;
+      if(fail)throw Error('演示故障：模拟物流消费不可用');
       if(e.type==='OrderShipped'){
         const old=await tx.get('SELECT id FROM shipments WHERE order_id=?',[e.aggregate_id]);
         if(!old){const id='WF-'+e.aggregate_id.slice(3);await tx.run('INSERT INTO shipments VALUES (?,?,?,?,?)',[id,e.aggregate_id,'WareFlow 模拟物流','CREATED',now()]);await tx.run('INSERT INTO tracking VALUES (?,?,?,?,?)',[uid(),id,'CREATED','仓库出库复核完成，电子运单已创建',now()]);}
       }
-      await tx.run("UPDATE outbox SET status='DONE',attempts=attempts+1,error=NULL,consumed_at=? WHERE id=?",[now(),e.id]);consumed++;
-    }return {consumed,failed};
-  });
+      await tx.run("UPDATE outbox SET status='DONE',attempts=attempts+1,error=NULL,consumed_at=? WHERE id=?",[now(),e.id]);return true;
+    });if(changed)consumed++;
+    }catch(error){
+      // 副作用事务已回滚；独立事务保存失败次数，重启后仍可恢复。
+      await db.tx(async tx=>{const e=await tx.get('SELECT * FROM outbox WHERE id=?',[selected.id]);if(!e||!['PENDING','RETRY'].includes(e.status))return;const attempts=e.attempts+1;await tx.run('UPDATE outbox SET attempts=?,status=?,error=?,available_at=? WHERE id=?',[attempts,attempts>=5?'DEAD':'RETRY',String(error.message).slice(0,256),new Date(Date.now()+Math.min(60000,1000*2**attempts)).toISOString(),e.id]);});failed++;
+    }
+  }return {consumed,failed};
 }
 export async function reconcile(db){
   return db.tx(async tx=>{
