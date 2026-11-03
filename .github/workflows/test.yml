@@ -1,0 +1,44 @@
+name: Warehouse verification
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  sqlite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: node --test --test-concurrency=1 tests/warehouse.test.js
+  mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root_test_only
+          MYSQL_DATABASE: wareflow_test
+          MYSQL_USER: wareflow
+          MYSQL_PASSWORD: wareflow_lab_2026
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      DB_DRIVER: mysql
+      MYSQL_DATABASE: wareflow_test
+      MYSQL_USER: wareflow
+      MYSQL_PASSWORD: wareflow_lab_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: mkdir -p docs && node --test --test-concurrency=1 --test-reporter=spec --test-reporter=./tests/reporter.js --test-reporter-destination=stdout --test-reporter-destination=docs/test-results-mysql.json tests/warehouse.test.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mysql-test-evidence
+          path: docs/test-results-mysql.json

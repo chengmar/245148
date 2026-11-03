@@ -1,0 +1,32 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_lab_change_me}
+      MYSQL_DATABASE: wareflow
+      MYSQL_USER: wareflow
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-wareflow_lab_2026}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:3210:3210"
+    environment:
+      DB_DRIVER: mysql
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: wareflow
+      MYSQL_USER: wareflow
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-wareflow_lab_2026}
+      HOST: 0.0.0.0
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  mysql-data:
