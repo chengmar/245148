@@ -1,0 +1,35 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+start
+:业务事务提交Outbox;
+:worker读取到期事件;
+if (模拟消费故障?) then (是)
+ :attempts加1;
+ if (attempts大于等于5?) then (是)
+  :进入DEAD队列;
+  :管理员重放后attempts归零;
+ else (否)
+  :RETRY 指数退避最长60秒;
+ endif
+else (否)
+ if (OrderShipped?) then (是)
+  :检查唯一order_id运单;
+  :不存在则创建运单及轨迹;
+ endif
+ :标记DONE;
+endif
+:事务提交;
+stop
+
+@enduml

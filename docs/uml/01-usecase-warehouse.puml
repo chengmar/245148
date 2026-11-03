@@ -1,0 +1,39 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+left to right direction
+actor 作业员 as Operator
+actor 主管 as Admin
+actor 观察员 as Viewer
+rectangle 仓储业务边界 {
+ usecase "UC01 登记批次入库" as In
+ usecase "UC02 查询库存与效期" as Stock
+ usecase "UC03 版本校验盘点" as Count
+ usecase "UC04 创建出库订单" as Create
+ usecase "UC05 FEFO库存预留" as Reserve
+ usecase "UC06 路线查看与拣货确认" as Pick
+ usecase "UC07 复核出库" as Ship
+ usecase "UC08 取消订单释放库存" as Cancel
+}
+Admin --|> Operator
+Operator --> In
+Operator --> Stock
+Operator --> Create
+Operator --> Reserve
+Operator --> Pick
+Operator --> Ship
+Operator --> Cancel
+Admin --> Count
+Viewer --> Stock
+
+@enduml

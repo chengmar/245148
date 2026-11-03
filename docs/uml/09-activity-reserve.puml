@@ -1,0 +1,35 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+start
+:进入command事务并获得写锁;
+:校验订单为CREATED;
+while (还有订单行?) is (是)
+ :筛选有效批次并按FEFO排序;
+ :逐批条件预留并写分配与流水;
+ note right
+  take = min(remaining, available)
+  增加reserved 减少remaining
+  记录Allocation和RESERVE流水
+ end note
+ if (remaining大于0?) then (是)
+  :抛出库存不足错误;
+  :ROLLBACK整单所有变更;
+  stop
+ endif
+endwhile (否)
+:改为RESERVED并写事件与幂等响应;
+:COMMIT全部变更;
+stop
+
+@enduml

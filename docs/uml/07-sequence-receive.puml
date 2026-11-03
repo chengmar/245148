@@ -1,0 +1,42 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+actor 作业员 as User
+boundary 工作台 as UI
+control REST路由 as API
+control command as CMD
+control receive as Domain
+database DB
+User -> UI : 填写批次 数量 效期 货位
+UI -> API : POST /api/receipts\nIdempotency-Key
+API -> API : 会话与角色校验
+API -> CMD : scope + 请求指纹
+CMD -> DB : BEGIN + 锁行
+CMD -> DB : 查询幂等记录
+alt 已有同键同指纹
+ DB --> CMD : 原响应
+else 新命令
+ CMD -> Domain : receive(tx,input)
+ Domain -> DB : 检查商品 货位 冷链 库容
+ Domain -> DB : 写批次 入库单 库存流水
+ Domain -> DB : 写StockReceived与事件哈希
+ Domain --> CMD : 入库结果
+ CMD -> DB : 写幂等响应
+end
+CMD -> DB : COMMIT
+CMD --> API : 首次结果或原响应
+API --> UI : JSON
+UI --> User : 更新库存快照
+note over CMD,DB : 业务错误时ROLLBACK 无残留库存与事件
+
+@enduml

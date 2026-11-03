@@ -1,0 +1,48 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+top to bottom direction
+package "表现层 public" {
+ [Bootstrap工作台与SVG货位视图] as UI
+}
+package "接口层 server.js" {
+ [Express REST路由] as API
+ [Cookie会话与角色授权] as Auth
+}
+package "应用与领域层 domain.js" {
+ [幂等命令 command] as CMD
+ [库存与订单领域操作] as Domain
+ [Outbox事件消费者 dispatch] as Worker
+ [一致性与摘要校验 reconcile] as Verify
+}
+package "基础设施 db.js" {
+ [事务连接与写锁] as TX
+ [SQLite适配器] as SQLite
+ [MySQL适配器] as MySQL
+}
+UI --> API : 同源JSON API
+API --> Auth
+API --> CMD
+CMD --> Domain
+Domain --> TX : 库存+流水+事件
+Worker --> TX : 轮询事件并生成运单
+Verify --> TX : 一致快照
+TX --> SQLite
+TX --> MySQL
+note right of Worker
+ 事件驱动的模块化单体
+ 通过持久化Outbox解耦
+ 不依赖外部消息中间件
+end note
+
+@enduml

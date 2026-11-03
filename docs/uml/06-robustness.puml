@@ -1,0 +1,39 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+left to right direction
+actor 作业员 as User
+boundary "订单工作台\npublic/app.js" as UI
+boundary "REST路由\nserver.js" as API
+control "幂等命令\ncommand" as Command
+control "库存分配\norderAction" as Reserve
+entity Order
+entity Lot
+entity Allocation
+entity StockMove
+entity OutboxEvent
+User --> UI
+UI --> API
+API --> Command
+Command --> Reserve
+Reserve --> Order
+Reserve --> Lot
+Reserve --> Allocation
+Reserve --> StockMove
+Reserve --> OutboxEvent
+note bottom of Reserve
+ 同一数据库事务
+ 任一商品不足则全部回滚
+end note
+
+@enduml

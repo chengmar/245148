@@ -1,186 +1,206 @@
 {
-  "executed_at": "2026-11-03T03:10:29.703Z",
+  "executed_at": "2026-11-03T03:15:00.536Z",
   "driver": "sqlite",
   "node": "v24.22.1",
   "cases": [
     {
       "name": "M01 入库正常路径 同步写入库存流水和领域事件",
       "result": "PASS",
-      "duration_ms": 82.2909
+      "duration_ms": 82.7285
     },
     {
       "name": "M02 数量等价类 零负数小数及超限均拒绝",
       "result": "PASS",
-      "duration_ms": 68.2659
+      "duration_ms": 68.197
     },
     {
       "name": "M03 冷链商品拒绝常温货位",
       "result": "PASS",
-      "duration_ms": 70.0929
+      "duration_ms": 69.9151
     },
     {
       "name": "M04 货位容量不足时回滚",
       "result": "PASS",
-      "duration_ms": 67.7198
+      "duration_ms": 67.4702
     },
     {
       "name": "M05 过期及非法日期拒绝",
       "result": "PASS",
-      "duration_ms": 67.8683
+      "duration_ms": 67.8131
     },
     {
       "name": "M06 重复入库幂等 同键同请求仅记一次",
       "result": "PASS",
-      "duration_ms": 69.2572
+      "duration_ms": 72.4467
     },
     {
       "name": "M07 同幂等键不同载荷返回冲突",
       "result": "PASS",
-      "duration_ms": 68.5022
+      "duration_ms": 69.6662
     },
     {
       "name": "M08 同批次效期冲突拒绝",
       "result": "PASS",
-      "duration_ms": 67.4059
+      "duration_ms": 68.0216
     },
     {
       "name": "M09 订单空行与重复商品拒绝",
       "result": "PASS",
-      "duration_ms": 67.6614
+      "duration_ms": 66.8944
     },
     {
       "name": "M10 FEFO 优先预留最早到期有效批次",
       "result": "PASS",
-      "duration_ms": 68.3915
+      "duration_ms": 70.88
     },
     {
       "name": "M11 多商品分配失败整单回滚",
       "result": "PASS",
-      "duration_ms": 68.6307
+      "duration_ms": 68.9526
     },
     {
       "name": "M12 并发争抢 最多一个成功且不会超卖",
       "result": "PASS",
-      "duration_ms": 70.5349
+      "duration_ms": 70.1924
     },
     {
       "name": "M13 取消已预留订单恢复可用量",
       "result": "PASS",
-      "duration_ms": 68.1192
+      "duration_ms": 67.8247
     },
     {
       "name": "M14 已拣货取消同样释放预留",
       "result": "PASS",
-      "duration_ms": 69.3338
+      "duration_ms": 70.1339
     },
     {
       "name": "M15 非法跳转禁止直接出库",
       "result": "PASS",
-      "duration_ms": 69.2632
+      "duration_ms": 66.9483
     },
     {
       "name": "M16 出库同时扣减在库和预留",
       "result": "PASS",
-      "duration_ms": 68.4676
+      "duration_ms": 71.5618
     },
     {
       "name": "M17 已过期批次不会分配",
       "result": "PASS",
-      "duration_ms": 67.5314
+      "duration_ms": 67.1771
     },
     {
       "name": "M18 盘点差异记流水并保持守恒",
       "result": "PASS",
-      "duration_ms": 66.8647
+      "duration_ms": 69.7493
     },
     {
       "name": "M19 盘点不能侵占预留量",
       "result": "PASS",
-      "duration_ms": 67.8817
+      "duration_ms": 68.6407
     },
     {
       "name": "M20 过期版本盘点拒绝 防止覆盖并发库存",
       "result": "PASS",
-      "duration_ms": 66.5648
+      "duration_ms": 67.1325
     },
     {
       "name": "M21 温度阈值与连续异常告警合并",
       "result": "PASS",
-      "duration_ms": 67.1452
+      "duration_ms": 68.193
     },
     {
       "name": "M22 故障重试达到五次进入死信",
       "result": "PASS",
-      "duration_ms": 68.8262
+      "duration_ms": 68.6649
     },
     {
       "name": "M23 重复消费不会重复创建运单",
       "result": "PASS",
-      "duration_ms": 67.9278
+      "duration_ms": 69.6907
     },
     {
       "name": "M24 物流拒绝乱序签收",
       "result": "PASS",
-      "duration_ms": 67.4636
+      "duration_ms": 67.4913
     },
     {
       "name": "M25 入库至签收端到端闭环一致",
       "result": "PASS",
-      "duration_ms": 69.1307
+      "duration_ms": 69.6626
     },
     {
       "name": "M26 篡改事件载荷可以被哈希链检出",
       "result": "PASS",
-      "duration_ms": 67.4412
+      "duration_ms": 67.4867
     },
     {
       "name": "M27 库存账实差异定位到批次",
       "result": "PASS",
-      "duration_ms": 70.3428
+      "duration_ms": 70.5583
     },
     {
       "name": "M28 路线去重且优化距离不超过编号基线",
       "result": "PASS",
-      "duration_ms": 0.8017
+      "duration_ms": 0.8056
     },
     {
       "name": "M29 多批次分配数量守恒",
       "result": "PASS",
-      "duration_ms": 67.3964
+      "duration_ms": 67.9942
+    },
+    {
+      "name": "M30 未注册设备上报拒绝",
+      "result": "PASS",
+      "duration_ms": 67.0228
+    },
+    {
+      "name": "M31 温度非法等价类拒绝",
+      "result": "PASS",
+      "duration_ms": 67.8102
+    },
+    {
+      "name": "M32 物流重复回调幂等 不重复追加轨迹",
+      "result": "PASS",
+      "duration_ms": 71.597
+    },
+    {
+      "name": "M33 消费者真实异常回滚后保留重试记录",
+      "result": "PASS",
+      "duration_ms": 69.0991
     },
     {
       "name": "F01 HTTP 未登录拒绝获取业务数据",
       "result": "PASS",
-      "duration_ms": 111.7662
+      "duration_ms": 114.0332
     },
     {
       "name": "F02 HTTP 只读角色无法创建订单",
       "result": "PASS",
-      "duration_ms": 103.9419
+      "duration_ms": 106.2321
     },
     {
       "name": "F03 HTTP 作业员不能盘点库存",
       "result": "PASS",
-      "duration_ms": 98.1126
+      "duration_ms": 95.4766
     },
     {
       "name": "F04 HTTP 跨站写入拒绝",
       "result": "PASS",
-      "duration_ms": 71.1392
+      "duration_ms": 70.2077
     }
   ],
   "summary": {
     "success": true,
     "counts": {
-      "tests": 33,
+      "tests": 37,
       "failed": 0,
-      "passed": 33,
+      "passed": 37,
       "cancelled": 0,
       "skipped": 0,
       "todo": 0,
-      "topLevel": 33,
+      "topLevel": 37,
       "suites": 0
     },
-    "duration_ms": 2474.6592
+    "duration_ms": 2771.9041
   }
 }

@@ -1,0 +1,31 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+hide empty description
+[*] --> CREATED : 创建
+CREATED --> RESERVED : reserve 全部商品可分配
+CREATED --> CREATED : 库存不足 整单回滚
+RESERVED --> PICKED : pick 拣货确认
+PICKED --> SHIPPED : ship 实物扣减并发出事件
+SHIPPED --> DELIVERED : 物流IN_TRANSIT后签收
+CREATED --> CANCELLED : cancel
+RESERVED --> CANCELLED : cancel 释放预留
+PICKED --> CANCELLED : cancel 释放预留并人工归位
+CANCELLED --> [*]
+DELIVERED --> [*]
+note right of SHIPPED
+ 不允许直接取消
+ 退货与逆向物流未纳入本次范围
+end note
+
+@enduml

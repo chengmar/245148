@@ -234,34 +234,23 @@ end note
 '09-activity-reserve': r'''
 start
 :进入command事务并获得写锁;
-if (幂等键已存在?) then (是)
- if (指纹一致?) then (是)
-  :返回保存的响应;
-  stop
- else (否)
-  :返回409;
-  stop
- endif
-endif
 :校验订单为CREATED;
 while (还有订单行?) is (是)
- :筛选expiry大于今日的可用批次;
- :按效期 批次 货位稳定排序;
- :remaining = 需求数量;
- while (仍有批次且remaining大于0?) is (是)
-  :take = min 可用量与remaining;
-  :条件更新reserved并写预留流水;
-  :记录Allocation 减少remaining;
- endwhile (否)
+ :筛选有效批次并按FEFO排序;
+ :逐批条件预留并写分配与流水;
+ note right
+  take = min(remaining, available)
+  增加reserved 减少remaining
+  记录Allocation和RESERVE流水
+ end note
  if (remaining大于0?) then (是)
   :抛出库存不足错误;
   :ROLLBACK整单所有变更;
   stop
  endif
 endwhile (否)
-:订单改为RESERVED;
-:写InventoryReserved与幂等响应;
-:COMMIT;
+:改为RESERVED并写事件与幂等响应;
+:COMMIT全部变更;
 stop
 ''',
 '10-state-order': r'''
@@ -309,5 +298,5 @@ import re
 for name, content in diagrams.items():
     content = re.sub(r'(class \w+) \{ (.*?) \}', lambda m: m.group(1)+' {\n'+m.group(2).replace(r'\n','\n')+'\n}', content)
     content = content.replace('as Client { artifact', 'as Client {\n artifact').replace('as Web }','as Web\n}')
-    (OUT / (name+'.puml')).write_text('@startuml\n!pragma layout smetana\nskinparam defaultFontName Microsoft YaHei\nskinparam defaultFontSize 13\nskinparam backgroundColor white\nskinparam shadowing false\nskinparam roundcorner 8\nskinparam ArrowColor #50665B\nskinparam classBackgroundColor #F0F4EE\nskinparam packageBackgroundColor #F8FAF6\nskinparam sequenceMessageAlign center\n'+content+'\n@enduml\n',encoding='utf-8')
+    (OUT / (name+'.puml')).write_text('@startuml\n!pragma layout smetana\nskinparam dpi 170\nskinparam defaultFontName Microsoft YaHei\nskinparam defaultFontSize 13\nskinparam backgroundColor white\nskinparam shadowing false\nskinparam roundcorner 8\nskinparam ArrowColor #50665B\nskinparam classBackgroundColor #F0F4EE\nskinparam packageBackgroundColor #F8FAF6\nskinparam sequenceMessageAlign center\n'+content+'\n@enduml\n',encoding='utf-8')
 print(f'{len(diagrams)} PlantUML sources created')

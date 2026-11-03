@@ -19,5 +19,5 @@ if (-not (Test-Path -LiteralPath 'node_modules\express')) {
 }
 try { $health = Invoke-RestMethod 'http://localhost:3210/api/health' -TimeoutSec 2 } catch { $health = $null }
 if ($health.status -eq 'ok') { Start-Process 'http://localhost:3210'; Write-Host 'WareFlow is already running.'; exit }
-Start-Process 'http://localhost:3210'
+Start-Process -FilePath 'powershell.exe' -WindowStyle Hidden -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+(Join-Path $PSScriptRoot 'tools\open_when_ready.ps1')+'"'))
 & $nodeExe src/server.js

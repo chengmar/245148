@@ -1,0 +1,41 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+left to right direction
+node "浏览器终端" as Client {
+ artifact "public\nHTML JS Bootstrap" as Web
+}
+node "Docker宿主机" as Host {
+ node "app容器 Node.js 24" as App {
+  artifact "Express API" as API
+  artifact "Outbox轮询消费者" as Worker
+  artifact "模拟物流适配逻辑" as Mock
+ }
+ database "mysql容器\nMySQL 8.4 InnoDB\n持久化卷" as DB
+}
+node "可能的边缘设备部署\n扩展设计 尚未接入" as Edge {
+ node "扫码枪 RFID网关" as RFID
+ node "冷链温度传感器" as Sensor
+}
+Web --> API : HTTP localhost:3210\n对外部署需HTTPS反向代理
+API --> DB : mysql2 / 事务 / 参数化SQL
+Worker --> DB : 读取Outbox 写运单
+Worker --> Mock : OrderShipped
+Sensor ..> API : 未来 网关认证后转HTTPS
+RFID ..> API : 未来 入库扫描协议适配
+note bottom of Host
+ 已实现：本机SQLite模式或MySQL容器模式
+ 本图虚线为扩展部署 不代表真实硬件已接入
+end note
+
+@enduml

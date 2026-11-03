@@ -1,0 +1,44 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+actor 作业员 as User
+boundary 工作台 as UI
+control "订单命令" as API
+database DB
+control "dispatch消费者" as Worker
+User -> UI : 复核出库
+UI -> API : POST /orders/{id}/ship
+API -> DB : BEGIN + 锁行
+API -> DB : 校验PICKED状态
+API -> DB : on_hand -= qty\nreserved -= qty
+API -> DB : 写SHIP流水 OrderShipped事件\n写幂等响应
+API -> DB : COMMIT
+API --> UI : SHIPPED
+... 周期消费 1.5秒 ...
+Worker -> DB : BEGIN + 锁行
+Worker -> DB : 读取到期PENDING/RETRY
+Worker -> DB : 根据order_id查询运单
+alt 尚未创建
+ Worker -> DB : 写Shipment与首次Tracking
+else 已存在
+ Worker -> Worker : 跳过重复副作用
+end
+Worker -> DB : 标记事件DONE并COMMIT
+UI -> DB : 经API刷新快照
+DB --> UI : 运单及物流时间线
+note over Worker,DB
+ 运单唯一约束与消费确认同事务
+ 异常回滚后可重试
+end note
+
+@enduml

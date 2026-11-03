@@ -74,7 +74,7 @@ def table(headers,rows,widths=None):
 def picture(path,caption):
     path=DOCS/path
     im=Image.open(path);w,h=im.size
-    maxw=16;maxh=19.2
+    maxw=16;maxh=15.5 if path.name.startswith('01-usecase') else 19.2
     width=min(maxw,maxh*w/h)
     p=doc.add_paragraph();p.alignment=WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.keep_with_next=True
@@ -121,6 +121,7 @@ while i<len(lines):
 
 # 数据字典由SQL生成，约束与实际源保持一致。
 para('附录 A 数据库完整字典','Heading 1')
+para('索引命名说明  主键索引标识为 PRIMARY；未通过 CONSTRAINT 显式命名的唯一索引由数据库生成，本字典记录 MySQL 预期自动名。MySQL 会为需要的外键自动建立辅助索引，SQLite 不会自动建立相同外键索引，因此字段表对外键索引标为依引擎。可用 SHOW INDEX 核验实际名称。数量取值与跨表业务约束另见各表说明和领域模型。')
 names={'system_lock':'事务锁','users':'用户','sessions':'登录会话','products':'商品','locations':'货位','lots':'批次库存','receipts':'入库单','orders':'订单','order_lines':'订单行','allocations':'库存分配','stock_moves':'库存流水','outbox':'事件发件箱','shipments':'物流运单','tracking':'物流轨迹','readings':'温度采样','alerts':'告警','idempotency':'幂等请求'}
 cn={'id':'主键标识','note':'说明','username':'登录账号','password_hash':'口令哈希','role':'角色','name':'名称','user_id':'用户标识','expires_at':'会话到期','category':'分类','unit':'计量单位','min_stock':'安全库存','cold':'冷链标志','zone':'库区','x':'横坐标','y':'纵坐标','capacity':'容量','product_id':'商品标识','location_id':'货位标识','batch':'批次号','expiry':'效期日期','on_hand':'在库数量','reserved':'预留数量','version':'库存版本','lot_id':'库存批次','qty':'业务数量','supplier':'供应商','created_at':'创建时间','customer':'客户','destination':'目的地','priority':'优先级','status':'业务状态','order_id':'订单标识','kind':'操作类别','delta_hand':'在库增量','delta_reserved':'预留增量','reason':'变动原因','seq':'事件序号','type':'事件类型','aggregate_id':'聚合标识','payload':'业务载荷','previous_hash':'前序摘要','hash':'内容摘要','attempts':'消费次数','available_at':'可消费时间','error':'失败说明','consumed_at':'消费时间','carrier':'模拟承运商','shipment_id':'运单标识','message':'说明消息','device_id':'设备标识','temperature':'采样温度','resolved_at':'处理时间','fingerprint':'请求指纹','response':'原始响应'}
 schema=(ROOT/'src/schema.sql').read_text(encoding='utf-8')
@@ -138,13 +139,14 @@ for n,body in tables:
         else:buf+=ch
     parts.append(buf.strip())
     fields=[];index_rows=[];constraints=[]
+    composite_columns={f.strip() for group in re.findall(r'UNIQUE\((.*?)\)',body) for f in group.split(',')}
     for part in parts:
         m=re.match(r'^(\w+)\s+((?:VARCHAR|DECIMAL)\([^)]*\)|INTEGER|TEXT)(.*)$',part,re.I)
         if not m:constraints.append(part);continue
         f,typ,rest=m.groups();pk='PRIMARY KEY' in rest;unique='UNIQUE' in rest
         fk=re.search(r'FOREIGN KEY\('+re.escape(f)+r'\) REFERENCES (\w+)\((\w+)\)',body)
         default=re.search(r"DEFAULT ('[^']*'|\d+)",rest)
-        indexes='主键' if pk else '唯一' if unique else '否'
+        indexes='主键' if pk else '唯一' if unique else '组合唯一' if f in composite_columns else '依引擎' if fk else '否'
         rel='PK' if pk else ('FK '+fk[1]+'.'+fk[2] if fk else '—')
         fields.append([cn.get(f,f),f,typ.upper(),'否' if pk or 'NOT NULL' in rest else '是',default[1] if default else '无',rel,indexes])
         if pk:index_rows.append(('PRIMARY' if n else 'PRIMARY',f,'主键 唯一'))
@@ -152,7 +154,7 @@ for n,body in tables:
     for part in constraints:
         m=re.match(r'UNIQUE\((.*?)\)',part)
         if m:index_rows.append((m[1].split(',')[0]+'（MySQL自动名）',m[1],'组合唯一'))
-    table(['字段中文','字段英文','类型与宽度精度','可空','默认','主外键','索引'],fields,[2,2.8,2.4,.8,1,4,3])
+    table(['字段中文','字段英文','类型与宽度精度','可空','默认','主外键','索引'],fields,[1.8,2.8,2.8,.8,1.7,3.6,2.5])
     checks=[p for p in constraints if p.startswith('CHECK')]
     if checks:para('数据库取值约束  '+'；'.join(checks))
     if n in ['orders','shipments','outbox','alerts','users']:para('枚举与状态取值由服务层控制，详见状态模型及 API 说明；DDL 未声明枚举 CHECK。')
@@ -160,7 +162,6 @@ for n,body in tables:
     if n=='products':para('cold 取 0 或 1，min_stock 不小于 0；业务商品编号由种子数据初始化。')
     if n=='readings':para('服务约束  设备为 COLD-01；温度为有限数且位于 -50 至 80；告警阈值为 2 至 8。')
     if index_rows:table(['索引名称标识','字段','特性'],index_rows,[5,6,5])
-    para('索引命名说明  未通过 CONSTRAINT 显式命名的索引由数据库生成；上表记录 MySQL 预期自动名，现场可用 SHOW INDEX FROM '+n+' 核验。外键索引不在本字典中冒充手工创建的性能索引。')
     dictionary_md+=['\n## '+names[n]+' '+n,'|'+'|'.join(['字段中文','字段英文','类型','可空','默认','主外键','索引'])+'|','|---|---|---|---|---|---|---|']+['|'+'|'.join(row)+'|' for row in fields]+['\n约束 '+ '; '.join(constraints)]
 (DOCS/'数据库字典.md').write_text('\n'.join(dictionary_md),encoding='utf-8')
 
@@ -168,6 +169,10 @@ para('附录 B 自动测试与基准记录','Heading 1')
 result=json.loads((DOCS/'test-results-sqlite.json').read_text(encoding='utf-8'))
 para(f"SQLite 自动执行时间 {result['executed_at']}。运行环境 Windows {result['node']}。执行主体 node:test 自动化程序。实际通过 {len([c for c in result['cases'] if c['result']=='PASS'])} 项，共 {len(result['cases'])} 项。无失败项时，发现问题列统一为无。每个用例包含的具体输入与期望断言见 tests/warehouse.test.js，第四章已列关键场景的输入与期望。")
 table(['编号','测试内容','实际输出','发现问题','耗时毫秒'],[[c['name'].split(' ')[0],c['name'].split(' ',1)[1],c['result'],'无' if c['result']=='PASS' else c.get('error','失败'),f"{c['duration_ms']:.2f}"] for c in result['cases']],[1.2,9,2,1.4,2.4])
+para('测试输入与断言记录','Heading 2')
+specs=json.loads((DOCS/'test-specs.json').read_text(encoding='utf-8'))
+para('以下记录与上表用例编号一一对应。实际输出栏表示测试程序已执行并验证期望断言，不等同于另行采集的人工观察记录；所有用例的执行时间与执行主体同本附录开头。')
+table(['编号','输入','期望输出','实际输出'],[[c['name'].split(' ')[0],*specs[c['name'].split(' ')[0]],'断言通过' if c['result']=='PASS' else '断言失败'] for c in result['cases']],[1.2,6,6.5,2.3])
 bench=json.loads((DOCS/'benchmark-results.json').read_text(encoding='utf-8'))
 para('接口性能基准','Heading 2')
 para('执行时间 '+bench['executed_at']+'。独立内存测试库，十次预热，一百次请求，并发十。')
@@ -177,7 +182,11 @@ table(['指标','实测值'],[['随机种子',bench['route']['seed']],['任务�
 para(bench['limitations'])
 ci=DOCS/'ci-evidence.json'
 if ci.exists():
-    evidence=json.loads(ci.read_text(encoding='utf-8'));para('MySQL 与 SQLite 持续集成证据','Heading 2');para(json.dumps(evidence,ensure_ascii=False,indent=2))
+    evidence=json.loads(ci.read_text(encoding='utf-8'));para('MySQL 与 SQLite 持续集成证据','Heading 2')
+    table(['环境','通过数','失败数','状态'],[['SQLite',evidence['sqlite_tests']['passed'],0,'成功'],['MySQL 8.4',evidence['mysql_tests']['passed'],0,'成功']],[6,3,3,4])
+    para('验证提交 '+evidence['commit']);para('运行记录 '+evidence['run_url']);para('MySQL 原始执行产物 docs/test-results-mysql.json。'+evidence['scope'])
+for part in [doc.element,doc.styles.element]:
+    for border in list(part.iter(qn('w:pBdr'))):border.getparent().remove(border)
 doc.settings.element.append(OxmlElement('w:updateFields'))
 doc.settings.element[-1].set(qn('w:val'),'true')
 out=DOCS/'智慧仓储与物流协同系统实验报告.docx';doc.save(out)

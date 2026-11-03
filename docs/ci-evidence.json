@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-11-03",
+  "repository": "https://github.com/chengmar/245148",
+  "run_url": "https://github.com/chengmar/245148/actions/runs/41571721477",
+  "commit": "159529f91b1f6400c823ac60ace1ef285d96e2a6",
+  "status": "success",
+  "sqlite_tests": {"passed":37,"failed":0},
+  "mysql_tests": {"passed":37,"failed":0,"database":"MySQL 8.4","evidence":"test-results-mysql.json"},
+  "scope": "应用业务与数据库适配测试；不等同于本机执行Docker Compose完整部署验收"
+}

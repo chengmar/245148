@@ -1,0 +1,89 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+hide methods
+class Product {
+id: SKU
+ name: string
+ min_stock: int
+ cold: bool
+}
+class Location {
+id: string
+ zone: string
+ capacity: int
+ x,y: int
+}
+class Lot {
+id: UUID
+ batch: string
+ expiry: date
+ on_hand: int
+ reserved: int
+ version: int
+}
+class Receipt {
+id: string
+ qty: int
+ supplier: string
+}
+class Order {
+id: string
+ customer: string
+ status: OrderStatus
+}
+class OrderLine {
+qty: int
+}
+class Allocation {
+qty: int
+}
+class StockMove {
+kind: string
+ delta_hand: int
+ delta_reserved: int
+}
+class OutboxEvent {
+seq: int
+ type: string
+ payload: JSON
+ hash: SHA256
+ status: string
+}
+class Shipment {
+id: string
+ status: string
+}
+class Tracking {
+status: string
+ message: string
+}
+Product "1" -- "0..*" Lot
+Location "1" -- "0..*" Lot
+Lot "1" -- "0..*" Receipt
+Order "1" *-- "1..*" OrderLine
+Product "1" -- "0..*" OrderLine
+Order "1" -- "0..*" Allocation
+Lot "1" -- "0..*" Allocation
+Lot "1" -- "0..*" StockMove
+Order "0..1" -- "0..*" StockMove
+Order "1" -- "0..1" Shipment
+Shipment "1" *-- "1..*" Tracking
+OutboxEvent ..> Order : aggregate_id
+OutboxEvent ..> Lot : aggregate_id
+note bottom of Lot
+ 0 <= reserved <= on_hand
+ available = on_hand - reserved
+end note
+
+@enduml

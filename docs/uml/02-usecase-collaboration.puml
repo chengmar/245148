@@ -1,0 +1,37 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #50665B
+skinparam classBackgroundColor #F0F4EE
+skinparam packageBackgroundColor #F8FAF6
+skinparam sequenceMessageAlign center
+
+left to right direction
+actor 作业员 as Operator
+actor 主管 as Admin
+actor 观察员 as Viewer
+actor "模拟温度设备\n通过本地作业页面上报" as Sensor
+rectangle 协同与验证边界 {
+ usecase "UC09 物流轨迹查询与模拟更新" as Trace
+ usecase "UC10 温度采样与异常告警" as Temp
+ usecase "UC11 告警处理" as Alert
+ usecase "UC12 事件查询与故障演练" as Event
+ usecase "UC13 库存与事件链校验" as Check
+}
+Operator --> Trace
+Operator --> Temp
+Sensor --> Temp
+Admin --> Trace
+Admin --> Alert
+Admin --> Event
+Admin --> Check
+Viewer --> Trace
+Viewer --> Event : 只读查询
+Viewer --> Check
+
+@enduml
