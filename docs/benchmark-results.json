@@ -1,0 +1,421 @@
+{
+  "executed_at": "2026-11-03T03:08:28.413Z",
+  "environment": {
+    "os": "win32",
+    "node": "v24.22.1",
+    "driver": "sqlite",
+    "data": "seed.js initialized 8 SKUs / 18 locations / 5 orders"
+  },
+  "http": {
+    "requests": 100,
+    "concurrency": 10,
+    "warmup": 10,
+    "errors": 0,
+    "elapsed_ms": 104.0541,
+    "mean_ms": 10.06764,
+    "p95_ms": 13.421199999999999,
+    "max_ms": 27.014499999999998,
+    "requests_per_second": 961.0385366842825
+  },
+  "route": {
+    "seed": 20261103,
+    "cases": 1000,
+    "points_per_case": "3~10 unique seeded warehouse locations",
+    "baseline_total": 58096,
+    "optimized_total": 45820,
+    "saved_total": 12276,
+    "saving_percent": 21.130542550261637,
+    "improved_cases": 849,
+    "samples": [
+      {
+        "locations": [
+          "B-06",
+          "A-06",
+          "B-04",
+          "C-04",
+          "C-06",
+          "C-02"
+        ],
+        "points": [
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          },
+          {
+            "id": "A-06",
+            "zone": "A",
+            "x": 3,
+            "y": 12,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "B-06",
+            "zone": "B",
+            "x": 7,
+            "y": 12,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "C-06",
+            "zone": "C",
+            "x": 11,
+            "y": 12,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "C-02",
+            "zone": "C",
+            "x": 11,
+            "y": 4,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "C-04",
+            "zone": "C",
+            "x": 11,
+            "y": 8,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "B-04",
+            "zone": "B",
+            "x": 7,
+            "y": 8,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "distance": 54,
+        "baseline": 70,
+        "saved": 16,
+        "method": "最近邻 + 2-opt；曼哈顿距离，单位为网格步长"
+      },
+      {
+        "locations": [
+          "B-01",
+          "B-06",
+          "C-05"
+        ],
+        "points": [
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          },
+          {
+            "id": "B-01",
+            "zone": "B",
+            "x": 7,
+            "y": 2,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "B-06",
+            "zone": "B",
+            "x": 7,
+            "y": 12,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "C-05",
+            "zone": "C",
+            "x": 11,
+            "y": 10,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "distance": 46,
+        "baseline": 46,
+        "saved": 0,
+        "method": "最近邻 + 2-opt；曼哈顿距离，单位为网格步长"
+      },
+      {
+        "locations": [
+          "C-06",
+          "C-02",
+          "B-05",
+          "A-02",
+          "A-01",
+          "A-04",
+          "A-05",
+          "C-01",
+          "A-03",
+          "A-06"
+        ],
+        "points": [
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          },
+          {
+            "id": "A-01",
+            "zone": "A",
+            "x": 3,
+            "y": 2,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "A-02",
+            "zone": "A",
+            "x": 3,
+            "y": 4,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "A-03",
+            "zone": "A",
+            "x": 3,
+            "y": 6,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "A-04",
+            "zone": "A",
+            "x": 3,
+            "y": 8,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "A-05",
+            "zone": "A",
+            "x": 3,
+            "y": 10,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "A-06",
+            "zone": "A",
+            "x": 3,
+            "y": 12,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "B-05",
+            "zone": "B",
+            "x": 7,
+            "y": 10,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "C-06",
+            "zone": "C",
+            "x": 11,
+            "y": 12,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "C-02",
+            "zone": "C",
+            "x": 11,
+            "y": 4,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "C-01",
+            "zone": "C",
+            "x": 11,
+            "y": 2,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "distance": 50,
+        "baseline": 66,
+        "saved": 16,
+        "method": "最近邻 + 2-opt；曼哈顿距离，单位为网格步长"
+      },
+      {
+        "locations": [
+          "B-06",
+          "A-02",
+          "C-02",
+          "A-04",
+          "B-02",
+          "C-01"
+        ],
+        "points": [
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          },
+          {
+            "id": "A-02",
+            "zone": "A",
+            "x": 3,
+            "y": 4,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "A-04",
+            "zone": "A",
+            "x": 3,
+            "y": 8,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "B-06",
+            "zone": "B",
+            "x": 7,
+            "y": 12,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "B-02",
+            "zone": "B",
+            "x": 7,
+            "y": 4,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "C-02",
+            "zone": "C",
+            "x": 11,
+            "y": 4,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "C-01",
+            "zone": "C",
+            "x": 11,
+            "y": 2,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "distance": 46,
+        "baseline": 58,
+        "saved": 12,
+        "method": "最近邻 + 2-opt；曼哈顿距离，单位为网格步长"
+      },
+      {
+        "locations": [
+          "C-06",
+          "A-05",
+          "C-03",
+          "A-03",
+          "B-06",
+          "C-05",
+          "C-02"
+        ],
+        "points": [
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          },
+          {
+            "id": "A-03",
+            "zone": "A",
+            "x": 3,
+            "y": 6,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "A-05",
+            "zone": "A",
+            "x": 3,
+            "y": 10,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "B-06",
+            "zone": "B",
+            "x": 7,
+            "y": 12,
+            "capacity": 500,
+            "cold": 0
+          },
+          {
+            "id": "C-06",
+            "zone": "C",
+            "x": 11,
+            "y": 12,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "C-05",
+            "zone": "C",
+            "x": 11,
+            "y": 10,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "C-03",
+            "zone": "C",
+            "x": 11,
+            "y": 6,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "C-02",
+            "zone": "C",
+            "x": 11,
+            "y": 4,
+            "capacity": 500,
+            "cold": 1
+          },
+          {
+            "id": "复核台",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "distance": 46,
+        "baseline": 62,
+        "saved": 16,
+        "method": "最近邻 + 2-opt；曼哈顿距离，单位为网格步长"
+      }
+    ]
+  },
+  "limitations": "同机小数据基准，不代表真实生产吞吐；路线为无障碍双向网格步长，不代表实际仓库行走米数。"
+}

@@ -9,9 +9,9 @@ import { command,receive,createOrder,orderAction,countStock,recordTemperature,tr
 const future=days=>new Date(Date.now()+days*86400000).toISOString().slice(0,10);
 async function fixture(t){
   if(process.env.DB_DRIVER==='mysql'&&!process.env.MYSQL_DATABASE?.endsWith('_test'))throw Error('MySQL 测试必须使用独立的 *_test 数据库');
-  const db=await openDB({filename:':memory:'});
+  const db=await openDB({filename:':memory:'});t.after(()=>db.close());
   if(db.driver==='mysql')await db.tx(async tx=>{for(const table of ['idempotency','alerts','readings','tracking','shipments','outbox','stock_moves','allocations','order_lines','orders','receipts','lots','locations','products','sessions','users'])await tx.run(`DELETE FROM ${table}`);});
-  await seed(db);t.after(()=>db.close());return db;
+  await seed(db);return db;
 }
 const cmd=(db,scope,fn,key=uid(),input={})=>command(db,key,scope,input,fn);
 const inbound=(changes={})=>({product_id:'SKU-008',location_id:'B-05',batch:'TEST',expiry:future(90),quantity:20,supplier:'测试供应商',...changes});
@@ -49,6 +49,14 @@ test('M26 篡改事件载荷可以被哈希链检出',async t=>{const db=await f
 test('M27 库存账实差异定位到批次',async t=>{const db=await fixture(t);const l=await db.get('SELECT * FROM lots LIMIT 1');await db.tx(tx=>tx.run('UPDATE lots SET on_hand=on_hand+1 WHERE id=?',[l.id]));const r=await reconcile(db);assert.equal(r.ok,false);assert.equal(r.differences[0].lot_id,l.id);});
 test('M28 路线去重且优化距离不超过编号基线',()=>{const r=planRoute([{id:'A',x:9,y:2},{id:'B',x:1,y:7},{id:'C',x:8,y:3},{id:'A',x:9,y:2}]);assert.ok(r.distance<=r.baseline);assert.equal(r.points.length,5);assert.deepEqual(planRoute([]).distance,0);});
 test('M29 多批次分配数量守恒',async t=>{const db=await fixture(t);const early=await cmd(db,'in',tx=>receive(tx,inbound({quantity:2,expiry:future(1)})));const o=await makeOrder(db);await act(db,o.id,'reserve');const a=await db.all('SELECT * FROM allocations WHERE order_id=?',[o.id]);assert.equal(a.length,2);assert.equal(a.reduce((s,x)=>s+x.qty,0),3);assert.equal(a.find(x=>x.lot_id===early.lot_id).qty,2);await clean(db);});
+test('M30 未注册设备上报拒绝',async t=>{const db=await fixture(t);await assert.rejects(cmd(db,'temp',tx=>recordTemperature(tx,{device_id:'UNKNOWN',temperature:4})),/设备不存在/);});
+test('M31 温度非法等价类拒绝',async t=>{const db=await fixture(t);for(const temperature of [-50.1,80.1,NaN,'4'])await assert.rejects(cmd(db,'temp',tx=>recordTemperature(tx,{temperature})),/温度须/);});
+test('M32 物流重复回调幂等 不重复追加轨迹',async t=>{const db=await fixture(t);const s=await db.get('SELECT * FROM shipments LIMIT 1'),key=uid(),body={status:'IN_TRANSIT',message:'回调'};for(let i=0;i<2;i++)await command(db,key,'callback',body,tx=>trackingUpdate(tx,s.id,body));assert.equal((await db.all("SELECT * FROM tracking WHERE shipment_id=? AND status='IN_TRANSIT'",[s.id])).length,1);});
+test('M33 消费者真实异常回滚后保留重试记录',async t=>{const db=await fixture(t);const o=await makeOrder(db);for(const a of ['reserve','pick','ship'])await act(db,o.id,a);
+  // 用占用主键制造运单写入失败，验证真实数据库异常也进入重试。
+  const other=await makeOrder(db);await db.tx(tx=>tx.run('INSERT INTO shipments VALUES (?,?,?,?,?)',['WF-'+o.id.slice(3),other.id,'测试占位运单','CREATED',new Date().toISOString()]));
+  await dispatch(db,{limit:200});const e=await db.get("SELECT * FROM outbox WHERE type='OrderShipped' AND aggregate_id=?",[o.id]);assert.equal(e.status,'RETRY');assert.equal(e.attempts,1);assert.equal(await db.get('SELECT * FROM shipments WHERE order_id=?',[o.id]),undefined);
+});
 test('F01 HTTP 未登录拒绝获取业务数据',async t=>{const db=await fixture(t),r=await createApp({db,worker:false});const s=r.app.listen(0,'127.0.0.1');await once(s,'listening');t.after(()=>s.close());const response=await fetch(`http://127.0.0.1:${s.address().port}/api/state`);assert.equal(response.status,401);});
 test('F02 HTTP 只读角色无法创建订单',async t=>{const db=await fixture(t),r=await createApp({db,worker:false});const s=r.app.listen(0,'127.0.0.1');await once(s,'listening');t.after(()=>s.close());const url=`http://127.0.0.1:${s.address().port}`;const login=await fetch(url+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'viewer',password:'WareFlow2026!'})});const response=await fetch(url+'/api/orders',{method:'POST',headers:{'Content-Type':'application/json',Cookie:login.headers.get('set-cookie'),'Idempotency-Key':uid()},body:JSON.stringify(order())});assert.equal(response.status,403);});
 test('F03 HTTP 作业员不能盘点库存',async t=>{const db=await fixture(t),r=await createApp({db,worker:false});const s=r.app.listen(0,'127.0.0.1');await once(s,'listening');t.after(()=>s.close());const url=`http://127.0.0.1:${s.address().port}`;const login=await fetch(url+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'operator',password:'WareFlow2026!'})});const response=await fetch(url+'/api/counts',{method:'POST',headers:{'Content-Type':'application/json',Cookie:login.headers.get('set-cookie'),'Idempotency-Key':uid()},body:'{}'});assert.equal(response.status,403);});
