@@ -14,6 +14,7 @@ export async function createApp({db,worker=true}={}){
   app.use((req,res,next)=>{res.set({'X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'same-origin','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'"});next();});
   app.use(express.json({limit:'100kb'}));
   app.use('/vendor/bootstrap',express.static(resolve(root,'node_modules/bootstrap/dist/css')));
+  app.use('/vendor/tabler',express.static(resolve(root,'node_modules/@tabler/core/dist/css')));
   app.use(express.static(resolve(root,'public')));
   app.get('/api/health',async(req,res)=>{await db.get('SELECT id FROM system_lock');res.json({status:'ok',driver:db.driver,version:'1.0.0'});});
   const attempts=new Map();

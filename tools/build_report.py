@@ -92,7 +92,7 @@ p=para('WareFlow 栖序');p.alignment=WD_ALIGN_PARAGRAPH.CENTER;p.runs[0].font.s
 para('').paragraph_format.space_after=Pt(18)
 for name in ['专业','班级','组别','组长','成员','指导教师']:
     p=para(f'{name}    待填写');p.paragraph_format.left_indent=Cm(3);p.paragraph_format.space_after=Pt(12)
-p=para('完成日期    2026 年 11 月 3 日');p.paragraph_format.left_indent=Cm(3)
+p=para('完成日期    2026 年 11 月 4 日');p.paragraph_format.left_indent=Cm(3)
 doc.add_page_break()
 p=para('目录');p.runs[0].font.size=Pt(18);p.runs[0].bold=True
 p=doc.add_paragraph();field=OxmlElement('w:fldSimple');field.set(qn('w:instr'),'TOC \\o "1-2" \\h \\z \\u');p._p.append(field)

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@tabler/core':
+        specifier: 1.5.0
+        version: 1.5.0
       bootstrap:
         specifier: 5.3.8
         version: 5.3.8(@popperjs/core@2.11.8)
@@ -22,6 +25,10 @@ packages:
 
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
+
+  '@tabler/core@1.5.0':
+    resolution: {integrity: sha512-nXFwOF0jlH6cH57eCRDI6uxhlQGtN92hBmkSwgIsUNg+hQBwnK9clAv3dEcSkVkXY+lKpDq8hpCvDT1AwPIzZw==}
+    engines: {node: '>=20'}
 
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
@@ -325,6 +332,10 @@ packages:
 snapshots:
 
   '@popperjs/core@2.11.8': {}
+
+  '@tabler/core@1.5.0':
+    dependencies:
+      '@popperjs/core': 2.11.8
 
   accepts@2.0.0:
     dependencies:

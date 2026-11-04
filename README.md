@@ -6,6 +6,8 @@
 
 ![运营总览](docs/screenshots/01-overview.png)
 
+界面已基于 [Tabler 开源组件](https://github.com/tabler/tabler) 重做，提供可交互的等距仓库图、订单履约环形图、冷链监测、明暗主题和商品全局搜索。全部样式由本机提供。开源选型、许可证和文件说明见 [前端设计与开源来源](docs/前端设计与开源来源.md)。
+
 ## 启动
 
 Windows 双击 **启动系统.cmd**。当前电脑的依赖已安装，可直接运行；其他电脑需先安装 [Node.js 24 LTS](https://nodejs.org/)。首次安装依赖需要网络。

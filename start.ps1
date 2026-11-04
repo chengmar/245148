@@ -8,7 +8,7 @@ if (-not $nodeExe) {
 if (-not $nodeExe) { throw 'Please install Node.js 24 LTS from https://nodejs.org and run again.' }
 $major = [int]((& $nodeExe -p 'process.versions.node.split(".")[0]') | Select-Object -Last 1)
 if ($major -lt 22) { throw 'Node.js 22.13+ is required. Node.js 24 LTS is recommended.' }
-if (-not (Test-Path -LiteralPath 'node_modules\express')) {
+if (-not (Test-Path -LiteralPath 'node_modules\express') -or -not (Test-Path -LiteralPath 'node_modules\@tabler\core\dist\css\tabler.min.css')) {
     $npmCli = Join-Path (Split-Path $nodeExe) 'node_modules\npm\bin\npm-cli.js'
     $bundledPnpm = Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd'
     if (Test-Path -LiteralPath $npmCli) { & $nodeExe $npmCli install --ignore-scripts --no-audit --no-fund }
